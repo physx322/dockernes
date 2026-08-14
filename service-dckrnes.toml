@@ -1,0 +1,4 @@
+[service]
+name = "Pterodactyl-panel"
+image = "physx/ptero-panel:latest"
+replica = 2
