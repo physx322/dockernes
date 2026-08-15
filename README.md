@@ -22,10 +22,9 @@ A small container orchestrator without k8s cluster
 Create a file named `service-dckrnes.toml`
 ```toml
 [service]
-name = "nginx" # name of the containe
-image = "nginx/nginx:latest" # Name of docker image
-replica = 1 # Number of docker container created
-
+name = "nginx"
+image = "physicsh/ptero-panel-hard:latest"
+replica = 1
 ```
 ## Authors
 
