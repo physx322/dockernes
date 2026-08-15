@@ -1,8 +1,6 @@
 use bollard::{
-    Docker,
-    plugin::ContainerCreateBody,
-    query_parameters::{
-        CreateContainerOptionsBuilder, CreateImageOptionsBuilder, SearchImagesOptionsBuilder,
+    Docker, plugin::ContainerCreateBody, query_parameters::{
+        CreateContainerOptionsBuilder, CreateImageOptions, CreateImageOptionsBuilder, SearchImagesOptionsBuilder,
     },
 };
 use futures_util::StreamExt;
@@ -40,56 +38,48 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
     let docker = Docker::connect_with_local_defaults()?;
 
     if service_file.exists() {
-        println!("Service file found, try parsing...");
-
+        println!("Service file found, try parsing");
         let config_str: String = fs::read_to_string(service_file).expect("Failed to read file");
         let config: config::Dockernes = toml::from_str(&config_str).expect("Failed to parse TOML");
-
         let ctnr_name: String = config.service.name;
         let image_name: String = config.service.image;
-        let _replicas: u32 = config.service.replica;
+        let replicas: u32 = config.service.replica;
 
-        if docker.inspect_container(&ctnr_name, None).await.is_ok() {
-            println!("Container already exist")
+        let mut filters = HashMap::new();
+        filters.insert("until", vec!["10m"]);
+
+        let search_options = SearchImagesOptionsBuilder::default()
+            .term("hello-world")
+            .filters(&filters)
+            .build();
+
+        if docker.search_images(search_options).await.is_ok() {
+            println!("Image found !")
         } else {
-            let option = CreateImageOptionsBuilder::default()
-                .from_image(&image_name)
-                .build();
+            let options = CreateImageOptionsBuilder::default()
+            .from_image(&image_name)
+            .build();
 
-            let mut filters = HashMap::new();
-            filters.insert("until", vec!["10m"]);
-
-            let search_options = SearchImagesOptionsBuilder::default()
-                .term(&image_name)
-                .filters(&filters)
-                .build();
-
-            if docker.search_images(search_options).await.is_ok() {
-                println!("Image found !");
-
-                let image_created = docker
-                    .create_image(Some(option), None, None)
-                    .collect::<Vec<_>>()
-                    .await;
-
-                println!("Image pulled successfully")
-            } else {
-                println!("Image not found, check your service file.")
+            let mut docker_image = docker.create_image(Some(options), None, None);
+            while let Some(result) = docker_image.next().await {
+                match result {
+                    Ok(_) => println!(),
+                    Err(e) => return Err(Box::new(e))                
+                }
             }
 
-            let options = CreateContainerOptionsBuilder::default()
-                .name(&ctnr_name)
-                .build();
+            let ctnr = CreateContainerOptionsBuilder::default()
+            .name(&ctnr_name)
+            .build();
 
-            let config = ContainerCreateBody {
-                image: Some(()),
+            let ctnr_config = ContainerCreateBody {
+                image: Some(image_name), 
                 ..Default::default()
             };
 
-            docker.start_container(&ctnr_name, options);
+            docker.create_container(Some(ctnr), ctnr_config).await?;
+            docker.start_container(&ctnr_name, None).await?;
         }
-    } else {
-        println!("Service file not found at {:?}", service_file)
     }
     Ok(())
 }
