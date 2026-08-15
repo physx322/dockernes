@@ -6,11 +6,18 @@ use bollard::{
 use futures_util::StreamExt;
 use std::{collections::HashMap, env, fs};
 
+use crate::docker::client;
+
 mod config;
+mod docker;
 
 #[tokio::main]
 async fn main() {
     let mut args: pico_args::Arguments = pico_args::Arguments::from_env();
+    let client = client::connect();
+    if client.is_ok() {
+        println!("Client successfuly connected")
+    }
 
     let command: String = match args.free_from_str() {
         Ok(cmd) => cmd,
@@ -79,6 +86,7 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
 
             docker.create_container(Some(ctnr), ctnr_config).await?;
             docker.start_container(&ctnr_name, None).await?;
+            print!("Container created and started")
         }
     }
     Ok(())

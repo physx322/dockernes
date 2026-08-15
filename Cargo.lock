@@ -145,6 +145,7 @@ dependencies = [
  "futures-util",
  "pico-args",
  "serde",
+ "thiserror",
  "tokio",
  "toml",
 ]

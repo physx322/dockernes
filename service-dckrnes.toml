@@ -1,4 +1,4 @@
 [service]
-name = "nginx"
-image = "physicsh/ptero-panel-hard:latest"
+name = "Alpine"
+image = "alpine:latest"
 replica = 1
