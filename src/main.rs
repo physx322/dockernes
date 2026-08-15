@@ -1,6 +1,6 @@
 use bollard::{
     Docker, plugin::ContainerCreateBody, query_parameters::{
-        CreateContainerOptionsBuilder, CreateImageOptions, CreateImageOptionsBuilder, SearchImagesOptionsBuilder,
+        CreateContainerOptionsBuilder, CreateImageOptionsBuilder, SearchImagesOptionsBuilder,
     },
 };
 use futures_util::StreamExt;
@@ -43,13 +43,13 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
         let config: config::Dockernes = toml::from_str(&config_str).expect("Failed to parse TOML");
         let ctnr_name: String = config.service.name;
         let image_name: String = config.service.image;
-        let replicas: u32 = config.service.replica;
+        let _replicas: u32 = config.service.replica;
 
         let mut filters = HashMap::new();
         filters.insert("until", vec!["10m"]);
 
         let search_options = SearchImagesOptionsBuilder::default()
-            .term("hello-world")
+            .term(&image_name)
             .filters(&filters)
             .build();
 
@@ -64,7 +64,7 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
             while let Some(result) = docker_image.next().await {
                 match result {
                     Ok(_) => println!(),
-                    Err(e) => return Err(Box::new(e))                
+                    Err(e) => return Err(Box::new(e))
                 }
             }
 
