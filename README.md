@@ -18,7 +18,16 @@ A small container orchestrator without k8s cluster
 - [ ] Proecting from pulling vulnerable image
 - [ ] API
 
+## Usage/Examples
+Create a file named `service-dckrnes.toml`
+```toml
+[service]
+name = "nginx" # name of the containe
+image = "nginx/nginx:latest" # Name of docker image
+replica = 1 # Number of docker container created
 
+```
 ## Authors
 
 - [@PhysX](https://www.github.com/physx322)
+
