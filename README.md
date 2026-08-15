@@ -8,8 +8,6 @@ A small container orchestrator without k8s cluster
 > [!CAUTION]
 > Do not use dockernes in production, the software is currently in development and is not yet ready
 
----
-
 ## Roadmap
 
 - [X] Detecting "service-dockrnes.toml" (like docker-compose.yml)
