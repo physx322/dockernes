@@ -22,9 +22,3 @@ A small container orchestrator without k8s cluster
 ## Authors
 
 - [@PhysX](https://www.github.com/physx322)
-
-<<<<<<< HEAD
-# Roadmap
-- [] Implements replicas of container
-=======
->>>>>>> cc2c1a3e037caa25fa96ff49bcf4d1b8e16da49e
