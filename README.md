@@ -13,7 +13,7 @@ A small container orchestrator without k8s cluster
 
 - [X] Detecting "service-dockrnes.toml" (like docker-compose.yml).
 - [X] Supporting environement variables.
-- [ ] Managing your container.
+- [X] Managing your container.
 - [ ] Life cycle.
 - [ ] Port forwarging.
 - [ ] Proecting from pulling vulnerable image.

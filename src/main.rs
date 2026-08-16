@@ -1,6 +1,9 @@
 use bollard::{
-    Docker, plugin::ContainerCreateBody, query_parameters::{
-        CreateContainerOptionsBuilder, CreateImageOptionsBuilder, SearchImagesOptionsBuilder, StopContainerOptionsBuilder,
+    Docker,
+    plugin::ContainerCreateBody,
+    query_parameters::{
+        CreateContainerOptionsBuilder, CreateImageOptionsBuilder, SearchImagesOptionsBuilder,
+        StopContainerOptionsBuilder,
     },
 };
 use futures_util::StreamExt;
@@ -63,6 +66,31 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
             println!("Environement variable detected")
         }
 
+        match docker.inspect_container(&ctnr_name, None).await {
+            Ok(info) => {
+                let is_running = info.state.as_ref().and_then(|s| s.running).unwrap_or(false);
+
+                if is_running {
+                    println!("Container '{}' already exist and running", ctnr_name);
+                    return Ok(());
+                }
+
+                println!("Starting container '{}'", ctnr_name);
+                docker.start_container(&ctnr_name, None).await?;
+                println!("Container started");
+                return Ok(());
+            }
+            Err(e) => {
+                let msg = e.to_string().to_lowercase();
+
+                if msg.contains("not found") || msg.contains("no such container") {
+                    println!("Container '{}' does not exist", ctnr_name);
+                } else {
+                    return Err(Box::new(e));
+                }
+            }
+        }
+
         let mut filters = HashMap::new();
         filters.insert("until", vec!["10m"]);
 
@@ -75,23 +103,23 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
             println!("Image found !")
         } else {
             let options = CreateImageOptionsBuilder::default()
-            .from_image(&image_name)
-            .build();
+                .from_image(&image_name)
+                .build();
 
             let mut docker_image = docker.create_image(Some(options), None, None);
             while let Some(result) = docker_image.next().await {
                 match result {
                     Ok(_) => println!(),
-                    Err(e) => return Err(Box::new(e))
+                    Err(e) => return Err(Box::new(e)),
                 }
             }
 
             let ctnr = CreateContainerOptionsBuilder::default()
-            .name(&ctnr_name)
-            .build();
+                .name(&ctnr_name)
+                .build();
 
             let ctnr_config = ContainerCreateBody {
-                image: Some(image_name), 
+                image: Some(image_name),
                 env: Some(env_var),
                 ..Default::default()
             };
@@ -117,11 +145,10 @@ async fn stop_container() -> Result<(), Box<dyn std::error::Error>> {
         let config: config::Dockernes = toml::from_str(&config_str).expect("Failed to parse TOML");
         let ctnr_name: String = config.service.name;
 
-        let options = StopContainerOptionsBuilder::default()
-            .t(30)
-            .build();
+        let options = StopContainerOptionsBuilder::default().t(30).build();
 
         docker.stop_container(&ctnr_name, Some(options)).await?;
+        println!("Container stopped")
     } else {
         println!("Service file not found")
     }
