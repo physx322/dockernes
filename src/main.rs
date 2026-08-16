@@ -1,10 +1,10 @@
 use bollard::{
     Docker, plugin::ContainerCreateBody, query_parameters::{
-        CreateContainerOptionsBuilder, CreateImageOptionsBuilder, SearchImagesOptionsBuilder,
+        CreateContainerOptionsBuilder, CreateImageOptionsBuilder, SearchImagesOptionsBuilder, StopContainerOptionsBuilder,
     },
 };
 use futures_util::StreamExt;
-use std::{collections::HashMap, env, fs};
+use std::{collections::HashMap, env, fs, vec};
 
 use crate::docker::client;
 
@@ -33,6 +33,12 @@ async fn main() {
                 eprintln!("Error running container: {}", e);
             }
         }
+
+        "stop" => {
+            if let Err(e) = stop_container().await {
+                eprintln!("Error while stoping container: {}", e);
+            }
+        }
         _ => println!("Unknown command"),
     }
 }
@@ -50,7 +56,12 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
         let config: config::Dockernes = toml::from_str(&config_str).expect("Failed to parse TOML");
         let ctnr_name: String = config.service.name;
         let image_name: String = config.service.image;
+        let env_var: Vec<String> = config.service.environement;
         let _replicas: u32 = config.service.replica;
+
+        if !env_var.is_empty() {
+            println!("Environement variable detected")
+        }
 
         let mut filters = HashMap::new();
         filters.insert("until", vec!["10m"]);
@@ -81,6 +92,7 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
 
             let ctnr_config = ContainerCreateBody {
                 image: Some(image_name), 
+                env: Some(env_var),
                 ..Default::default()
             };
 
@@ -88,6 +100,30 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
             docker.start_container(&ctnr_name, None).await?;
             print!("Container created and started")
         }
+    }
+    Ok(())
+}
+
+async fn stop_container() -> Result<(), Box<dyn std::error::Error>> {
+    println!("Stoping container...");
+
+    let cwd: std::path::PathBuf = env::current_dir().unwrap();
+    let service_file: std::path::PathBuf = cwd.join("./service-dckrnes.toml");
+    let docker = Docker::connect_with_local_defaults()?;
+
+    if service_file.exists() {
+        println!("Service file found, try parsing");
+        let config_str: String = fs::read_to_string(service_file).expect("Failed to read file");
+        let config: config::Dockernes = toml::from_str(&config_str).expect("Failed to parse TOML");
+        let ctnr_name: String = config.service.name;
+
+        let options = StopContainerOptionsBuilder::default()
+            .t(30)
+            .build();
+
+        docker.stop_container(&ctnr_name, Some(options)).await?;
+    } else {
+        println!("Service file not found")
     }
     Ok(())
 }

@@ -21,11 +21,16 @@ A small container orchestrator without k8s cluster
 
 ## Usage/Examples
 Create a file named `service-dckrnes.toml`
+
 ```toml
 [service]
-name = "nginx"
-image = "physicsh/ptero-panel-hard:latest"
+name = "PostgresSQL"
+image = "postgres:latest"
 replica = 1
+environement = [
+    "POSTGRES_PASSWORD=password",
+    "POSTGRES_USER=postgres"
+    ]
 
 ```
 | Field     | Description                                  |

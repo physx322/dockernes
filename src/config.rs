@@ -11,4 +11,5 @@ pub struct Service {
     pub name: String,
     pub image: String,
     pub replica: u32,
+    pub environement: Vec<String>,
 }
