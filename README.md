@@ -3,7 +3,9 @@
 
 A small container orchestrator without k8s cluster
 
-[![CodeFactor](https://www.codefactor.io/repository/github/physx322/dockernes/badge/main)](https://www.codefactor.io/repository/github/physx322/dockernes/overview/main)
+![CodeFactor Grade (with branch)](https://img.shields.io/codefactor/grade/github/physx322/dockernes/main)
+![GitHub top language](https://img.shields.io/github/languages/top/physx322/dockernes)
+
 
 > [!CAUTION]
 > Do not use dockernes in production, the software is currently in development and is not yet ready
