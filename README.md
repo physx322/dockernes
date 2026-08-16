@@ -12,6 +12,7 @@ A small container orchestrator without k8s cluster
 ## Roadmap
 
 - [X] Detecting "service-dockrnes.toml" (like docker-compose.yml).
+- [X] Supporting environement variables.
 - [ ] Managing your container.
 - [ ] Life cycle.
 - [ ] Port forwarging.
@@ -34,10 +35,11 @@ environement = [
 
 ```
 | Field     | Description                                  |
-|-----------|-----------------------------------------------|
+|-----------|----------------------------------------------|
 | `name`    | Name of the service/container                |
 | `image`   | Docker image to use                          |
 | `replica` | Number of container instances to run         |
+| `envrionement` | Environement variable for your service  |
 
 ### Usage
 ```bash
