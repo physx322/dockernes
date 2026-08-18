@@ -1,7 +1,6 @@
 [service]
 name = "PostgresSQL"
 image = "postgres:latest"
-replica = 1
 environement = [
     "POSTGRES_PASSWORD=password",
     "POSTGRES_USER=postgres"
