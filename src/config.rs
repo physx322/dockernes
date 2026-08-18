@@ -1,6 +1,5 @@
 use serde::Deserialize;
 
-
 #[derive(Debug, Deserialize)]
 pub struct Dockernes {
     pub service: Service,
@@ -10,6 +9,5 @@ pub struct Dockernes {
 pub struct Service {
     pub name: String,
     pub image: String,
-    pub replica: u32,
     pub environement: Vec<String>,
 }

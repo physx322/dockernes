@@ -16,7 +16,7 @@ A small container orchestrator like docker-compose
 - [X] Managing your container.
 - [ ] Life cycle.
 - [ ] Port forwarging.
-- [ ] Proecting from pulling vulnerable image.
+- [ ] Protecting from pulling vulnerable image.
 - [ ] Multi service deployement.
 - [ ] API.
 
