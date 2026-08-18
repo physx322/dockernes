@@ -14,7 +14,6 @@ A small container orchestrator like docker-compose
 - [X] Detecting "service-dockrnes.toml" (like docker-compose.yml).
 - [X] Supporting environement variables.
 - [X] Managing your container.
-- [ ] Life cycle.
 - [ ] Port forwarging.
 - [ ] Protecting from pulling vulnerable image.
 - [ ] Multi service deployement.
@@ -37,7 +36,6 @@ environement = [
 |-----------|----------------------------------------------|
 | `name`    | Name of the service/container                |
 | `image`   | Docker image to use                          |
-| `replica` | Number of container instances to run         |
 | `envrionement` | Environement variable for your service  |
 
 ### Usage
