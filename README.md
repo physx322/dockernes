@@ -1,6 +1,6 @@
 # Dockernes
 
-A small container orchestrator without k8s cluster
+A small container orchestrator like docker-compose
 
 ![CodeFactor Grade (with branch)](https://img.shields.io/codefactor/grade/github/physx322/dockernes/main)
 ![GitHub top language](https://img.shields.io/github/languages/top/physx322/dockernes)
@@ -60,4 +60,3 @@ No license has been specified yet for this project.
 ## Authors
 
 - [@PhysX](https://www.github.com/physx322)
-
