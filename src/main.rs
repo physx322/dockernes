@@ -51,7 +51,7 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
 
     let cwd: std::path::PathBuf = env::current_dir().unwrap();
     let service_file: std::path::PathBuf = cwd.join("./service-dckrnes.toml");
-    let docker = Docker::connect_with_local_defaults()?;
+    let docker = Docker::connect_with_socket_defaults()?;
 
     if service_file.exists() {
         println!("Service file found, try parsing");
@@ -60,7 +60,6 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
         let ctnr_name: String = config.service.name;
         let image_name: String = config.service.image;
         let env_var: Vec<String> = config.service.environement;
-        let _replicas: u32 = config.service.replica;
 
         if !env_var.is_empty() {
             println!("Environement variable detected")
@@ -115,18 +114,18 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
             }
 
             let ctnr = CreateContainerOptionsBuilder::default()
-                .name(&ctnr_name)
-                .build();
+               .name(&ctnr_name)
+               .build();
 
             let ctnr_config = ContainerCreateBody {
-                image: Some(image_name),
-                env: Some(env_var),
-                ..Default::default()
+               image: Some(image_name.clone()),
+               env: Some(env_var.clone()),
+               ..Default::default()
             };
 
             docker.create_container(Some(ctnr), ctnr_config).await?;
             docker.start_container(&ctnr_name, None).await?;
-            print!("Container created and started")
+            print!("Containers created and started")
         }
     }
     Ok(())
@@ -137,7 +136,7 @@ async fn stop_container() -> Result<(), Box<dyn std::error::Error>> {
 
     let cwd: std::path::PathBuf = env::current_dir().unwrap();
     let service_file: std::path::PathBuf = cwd.join("./service-dckrnes.toml");
-    let docker = Docker::connect_with_local_defaults()?;
+    let docker = Docker::connect_with_socket_defaults()?;
 
     if service_file.exists() {
         println!("Service file found, try parsing");
