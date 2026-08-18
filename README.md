@@ -27,7 +27,6 @@ Create a file named `service-dckrnes.toml`
 [service]
 name = "PostgresSQL"
 image = "postgres:latest"
-replica = 1
 environement = [
     "POSTGRES_PASSWORD=password",
     "POSTGRES_USER=postgres"
@@ -42,8 +41,13 @@ environement = [
 | `envrionement` | Environement variable for your service  |
 
 ### Usage
+For starting container
 ```bash
 dckrnes run
+```
+For stopping the container
+```bash
+dckrnes stop
 ```
 
 > More commands and options will be documented as features are implemented.
