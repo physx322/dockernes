@@ -9,5 +9,6 @@ pub struct Dockernes {
 pub struct Service {
     pub name: String,
     pub image: String,
-    pub environement: Vec<String>,
+    pub environement: Option<Vec<String>>,
+    pub volumes: Option<Vec<String>>,
 }

@@ -1,7 +1,6 @@
 [service]
-name = "PostgresSQL"
-image = "postgres:latest"
-environement = [
-    "POSTGRES_PASSWORD=password",
-    "POSTGRES_USER=postgres"
-    ]
+name = "redis"
+image = "redis:latest"
+volumes = [
+   "/home/physx/posgres"
+]

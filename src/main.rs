@@ -1,15 +1,19 @@
 use bollard::{
-    Docker,
-    plugin::ContainerCreateBody,
-    query_parameters::{
-        CreateContainerOptionsBuilder, CreateImageOptionsBuilder, SearchImagesOptionsBuilder,
-        StopContainerOptionsBuilder,
+    Docker, plugin::ContainerCreateBody, query_parameters::{
+        CreateContainerOptionsBuilder, CreateImageOptionsBuilder, StopContainerOptionsBuilder,
     },
 };
-use futures_util::StreamExt;
-use std::{collections::HashMap, env, fs, vec};
+use futures_util::{StreamExt};
+use std::{env, fs};
 
 use crate::docker::client;
+
+#[derive(Debug, PartialEq)]
+enum ContainerStatus {
+    AlreadyRunning,
+    Started,
+    NotFound,
+}
 
 mod config;
 mod docker;
@@ -47,8 +51,6 @@ async fn main() {
 }
 
 async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
-    println!("starting creating the Container");
-
     let cwd: std::path::PathBuf = env::current_dir().unwrap();
     let service_file: std::path::PathBuf = cwd.join("./service-dckrnes.toml");
     let docker = Docker::connect_with_socket_defaults()?;
@@ -59,48 +61,19 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
         let config: config::Dockernes = toml::from_str(&config_str).expect("Failed to parse TOML");
         let ctnr_name: String = config.service.name;
         let image_name: String = config.service.image;
-        let env_var: Vec<String> = config.service.environement;
+        let env_var: Vec<String> = config.service.environement.unwrap_or_default();
+        let volumes: Vec<String> = config.service.volumes.unwrap_or_default();
 
         if !env_var.is_empty() {
             println!("Environement variable detected")
         }
 
-        match docker.inspect_container(&ctnr_name, None).await {
-            Ok(info) => {
-                let is_running = info.state.as_ref().and_then(|s| s.running).unwrap_or(false);
-
-                if is_running {
-                    println!("Container '{}' already exist and running", ctnr_name);
-                    return Ok(());
-                }
-
-                println!("Starting container '{}'", ctnr_name);
-                docker.start_container(&ctnr_name, None).await?;
-                println!("Container started");
-                return Ok(());
-            }
-            Err(e) => {
-                let msg = e.to_string().to_lowercase();
-
-                if msg.contains("not found") || msg.contains("no such container") {
-                    println!("Container '{}' does not exist", ctnr_name);
-                } else {
-                    return Err(Box::new(e));
-                }
-            }
+        if !volumes.is_empty() {
+           println!("Volumes detected")
         }
 
-        let mut filters = HashMap::new();
-        filters.insert("until", vec!["10m"]);
-
-        let search_options = SearchImagesOptionsBuilder::default()
-            .term(&image_name)
-            .filters(&filters)
-            .build();
-
-        if docker.search_images(search_options).await.is_ok() {
-            println!("Image found !")
-        } else {
+        if docker.inspect_image(&image_name).await.is_err() {
+            println!("Image not found locally, Pulling...");
             let options = CreateImageOptionsBuilder::default()
                 .from_image(&image_name)
                 .build();
@@ -112,21 +85,29 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
                     Err(e) => return Err(Box::new(e)),
                 }
             }
-
+        }
+        
+        match check_container(&ctnr_name, &docker).await {
+         Ok(ContainerStatus::NotFound) => {
             let ctnr = CreateContainerOptionsBuilder::default()
-               .name(&ctnr_name)
-               .build();
-
+                  .name(&ctnr_name)
+                  .build();
+      
             let ctnr_config = ContainerCreateBody {
-               image: Some(image_name.clone()),
-               env: Some(env_var.clone()),
-               ..Default::default()
+                  image: Some(image_name.clone()),
+                  env: Some(env_var.clone()),
+                  volumes: Some(volumes.clone()),
+                  ..Default::default()
             };
-
+      
             docker.create_container(Some(ctnr), ctnr_config).await?;
             docker.start_container(&ctnr_name, None).await?;
-            print!("Containers created and started")
-        }
+            println!("Container created and started");
+         }
+         Ok(ContainerStatus::AlreadyRunning) => println!("Container already running"),
+         Ok(ContainerStatus::Started) => println!("Container started"),
+         Err(e) => return Err(e),
+      }
     }
     Ok(())
 }
@@ -152,4 +133,29 @@ async fn stop_container() -> Result<(), Box<dyn std::error::Error>> {
         println!("Service file not found")
     }
     Ok(())
+}
+
+
+async fn check_container(name: &String, docker: &Docker) -> Result<ContainerStatus, Box<dyn std::error::Error>> {
+    match docker.inspect_container(name, None).await {
+        Ok(info) => {
+            let is_running = info.state.as_ref().and_then(|s| s.running).unwrap_or(false);
+            if is_running {
+                return Ok(ContainerStatus::AlreadyRunning);
+            }
+            println!("Starting container '{}'", name);
+            docker.start_container(name, None).await?;
+            println!("Container started");
+            Ok(ContainerStatus::Started)
+        }
+        Err(e) => {
+            let msg = e.to_string().to_lowercase();
+            if msg.contains("not found") || msg.contains("no such container") {
+                println!("Container '{}' does not exist", name);
+                Ok(ContainerStatus::NotFound)
+            } else {
+                Err(Box::new(e))
+            }
+        }
+    }
 }
