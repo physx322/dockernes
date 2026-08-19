@@ -96,7 +96,10 @@ async fn start_container() -> Result<(), Box<dyn std::error::Error>> {
             let ctnr_config = ContainerCreateBody {
                   image: Some(image_name.clone()),
                   env: Some(env_var.clone()),
-                  volumes: Some(volumes.clone()),
+                  host_config: Some(bollard::models::HostConfig {
+                     binds: Some(volumes.clone()),
+                     ..Default::default()
+                  }),
                   ..Default::default()
             };
       
