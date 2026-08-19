@@ -31,6 +31,9 @@ environement = [
     "POSTGRES_PASSWORD=password",
     "POSTGRES_USER=postgres"
     ]
+volumes = [
+   "/home/physx/posgres:/app/data"
+]
 
 ```
 | Field     | Description                                  |
@@ -38,6 +41,7 @@ environement = [
 | `name`    | Name of the service/container                |
 | `image`   | Docker image to use                          |
 | `envrionement` | Environement variable for your service  |
+| `volumes` | Mount volume docker in your computer         |
 
 ### Usage
 For starting container
