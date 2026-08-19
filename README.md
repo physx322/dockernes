@@ -14,6 +14,7 @@ A small container orchestrator like docker-compose
 - [X] Detecting "service-dockrnes.toml" (like docker-compose.yml).
 - [X] Supporting environement variables.
 - [X] Managing your container.
+- [X] Mount volume.
 - [ ] Port forwarging.
 - [ ] Protecting from pulling vulnerable image.
 - [ ] Multi service deployement.
